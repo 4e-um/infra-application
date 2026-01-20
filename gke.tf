@@ -55,6 +55,11 @@ resource "google_container_cluster" "main" {
     enabled = true
   }
 
+  # Secret Manager addon for CSI Driver
+  secret_manager_config {
+    enabled = true
+  }
+
   # Security configurations
   security_posture_config {
     mode               = "BASIC"

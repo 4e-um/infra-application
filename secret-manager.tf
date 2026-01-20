@@ -146,3 +146,25 @@ resource "google_secret_manager_secret_version" "redis_message_endpoint" {
   secret      = google_secret_manager_secret.redis_message_endpoint.id
   secret_data = "${module.redis_message.private_ip}:6379"
 }
+
+# -----------------------------------------------------------------------------
+# Application Secrets
+# -----------------------------------------------------------------------------
+
+resource "google_secret_manager_secret" "aes_secret_key" {
+  count     = var.aes_secret_key != "" ? 1 : 0
+  project   = local.project_id
+  secret_id = "${var.project_name}-aes-secret-key"
+
+  replication {
+    auto {}
+  }
+
+  labels = local.common_labels
+}
+
+resource "google_secret_manager_secret_version" "aes_secret_key" {
+  count       = var.aes_secret_key != "" ? 1 : 0
+  secret      = google_secret_manager_secret.aes_secret_key[0].id
+  secret_data = var.aes_secret_key
+}

@@ -3,7 +3,7 @@
 # =============================================================================
 # GKE 클러스터 생성 후 자동으로 K8s 리소스 배포
 # - Namespace
-# - Secrets (Terraform outputs 사용)
+# - SecretProviderClass (Secret Manager CSI Driver)
 # - Service Accounts (Workload Identity)
 # - Ingress + BackendConfig
 # =============================================================================
@@ -27,84 +27,162 @@ resource "kubernetes_namespace" "app" {
 }
 
 # -----------------------------------------------------------------------------
-# Secrets
+# SecretProviderClass (Secret Manager CSI Driver)
 # -----------------------------------------------------------------------------
+# Pod에서 Secret Manager의 비밀을 파일로 마운트
 
-# Database Credentials
-resource "kubernetes_secret" "db_credentials" {
-  metadata {
-    name      = "db-credentials"
-    namespace = kubernetes_namespace.app.metadata[0].name
+# api-core용 SecretProviderClass
+resource "kubernetes_manifest" "secret_provider_api_core" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "api-core-secrets"
+      namespace = kubernetes_namespace.app.metadata[0].name
+    }
+    spec = {
+      provider = "gcp"
+      parameters = {
+        secrets = yamlencode([
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-user/versions/latest"
+            path         = "db-username"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-password/versions/latest"
+            path         = "db-password"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-connection-name/versions/latest"
+            path         = "db-connection-name"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-kafka-credentials/versions/latest"
+            path         = "kafka-credentials"
+          }
+        ])
+      }
+    }
   }
 
-  data = {
-    username        = google_sql_user.main.name
-    password        = var.database_password
-    database        = google_sql_database.main.name
-    connection-name = google_sql_database_instance.main.connection_name
-  }
-
-  type = "Opaque"
+  depends_on = [
+    kubernetes_namespace.app,
+    google_secret_manager_secret_version.db_user,
+    google_secret_manager_secret_version.db_password,
+    google_secret_manager_secret_version.db_connection_name,
+    google_secret_manager_secret_version.kafka
+  ]
 }
 
-# Redis Usage Credentials
-resource "kubernetes_secret" "redis_usage_credentials" {
-  metadata {
-    name      = "redis-usage-credentials"
-    namespace = kubernetes_namespace.app.metadata[0].name
+# api-usage용 SecretProviderClass
+resource "kubernetes_manifest" "secret_provider_api_usage" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "api-usage-secrets"
+      namespace = kubernetes_namespace.app.metadata[0].name
+    }
+    spec = {
+      provider = "gcp"
+      parameters = {
+        secrets = yamlencode([
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-user/versions/latest"
+            path         = "db-username"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-password/versions/latest"
+            path         = "db-password"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-connection-name/versions/latest"
+            path         = "db-connection-name"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-redis-usage-endpoint/versions/latest"
+            path         = "redis-endpoint"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-redis-usage-password/versions/latest"
+            path         = "redis-password"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-kafka-credentials/versions/latest"
+            path         = "kafka-credentials"
+          }
+        ])
+      }
+    }
   }
 
-  data = {
-    endpoint = "${module.redis_usage.private_ip}:6379"
-    password = var.redis_usage_password
-  }
-
-  type = "Opaque"
+  depends_on = [
+    kubernetes_namespace.app,
+    google_secret_manager_secret_version.db_user,
+    google_secret_manager_secret_version.db_password,
+    google_secret_manager_secret_version.db_connection_name,
+    google_secret_manager_secret_version.redis_usage,
+    google_secret_manager_secret_version.redis_usage_endpoint,
+    google_secret_manager_secret_version.kafka
+  ]
 }
 
-# Redis Message Credentials
-resource "kubernetes_secret" "redis_message_credentials" {
-  metadata {
-    name      = "redis-message-credentials"
-    namespace = kubernetes_namespace.app.metadata[0].name
+# api-message용 SecretProviderClass
+resource "kubernetes_manifest" "secret_provider_api_message" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "api-message-secrets"
+      namespace = kubernetes_namespace.app.metadata[0].name
+    }
+    spec = {
+      provider = "gcp"
+      parameters = {
+        secrets = yamlencode(concat([
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-user/versions/latest"
+            path         = "db-username"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-password/versions/latest"
+            path         = "db-password"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-db-connection-name/versions/latest"
+            path         = "db-connection-name"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-redis-message-endpoint/versions/latest"
+            path         = "redis-endpoint"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-redis-message-password/versions/latest"
+            path         = "redis-password"
+          },
+          {
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-kafka-credentials/versions/latest"
+            path         = "kafka-credentials"
+          }
+          ],
+          # AES Secret Key (optional)
+          var.aes_secret_key != "" ? [{
+            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-aes-secret-key/versions/latest"
+            path         = "aes-secret-key"
+        }] : []))
+      }
+    }
   }
 
-  data = {
-    endpoint = "${module.redis_message.private_ip}:6379"
-    password = var.redis_message_password
-  }
-
-  type = "Opaque"
-}
-
-# Kafka Credentials (Confluent Cloud)
-resource "kubernetes_secret" "kafka_credentials" {
-  metadata {
-    name      = "kafka-credentials"
-    namespace = kubernetes_namespace.app.metadata[0].name
-  }
-
-  data = {
-    bootstrap-servers = var.kafka_bootstrap_servers
-    api-key           = var.kafka_api_key
-    api-secret        = var.kafka_api_secret
-  }
-
-  type = "Opaque"
-}
-
-# Application Secrets
-resource "kubernetes_secret" "app_secrets" {
-  metadata {
-    name      = "app-secrets"
-    namespace = kubernetes_namespace.app.metadata[0].name
-  }
-
-  data = {
-    aes-secret-key = var.aes_secret_key
-  }
-
-  type = "Opaque"
+  depends_on = [
+    kubernetes_namespace.app,
+    google_secret_manager_secret_version.db_user,
+    google_secret_manager_secret_version.db_password,
+    google_secret_manager_secret_version.db_connection_name,
+    google_secret_manager_secret_version.redis_message,
+    google_secret_manager_secret_version.redis_message_endpoint,
+    google_secret_manager_secret_version.kafka
+  ]
 }
 
 # -----------------------------------------------------------------------------
