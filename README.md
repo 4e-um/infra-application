@@ -73,7 +73,7 @@ GKE AutoPilot, CloudSQL, Redis, Cloud Run Job 등 애플리케이션 인프라�
 bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 수 있도록 설정:
 
 - Terraform Cloud: Settings → General → Remote state sharing
-- `telecom-app-bootstrap` 워크스페이스 공유 허용
+- `infra-bootstrap` 워크스페이스 공유 허용
 
 ### 3. 변수 설정
 
@@ -96,7 +96,7 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `bootstrap_workspace_name` | string | `"telecom-app-bootstrap"` | Bootstrap 워크스페이스명 |
+| `bootstrap_workspace_name` | string | `"infra-bootstrap"` | Bootstrap 워크스페이스명 |
 | `project_name` | string | `"telecom-app"` | 리소스 이름 접두사 |
 | `environment` | string | `"dev"` | 환경 |
 | `database_tier` | string | `"db-f1-micro"` | CloudSQL 인스턴스 타입 |
