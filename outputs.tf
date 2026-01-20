@@ -43,6 +43,11 @@ output "cloudsql_private_ip" {
   value       = google_sql_database_instance.main.private_ip_address
 }
 
+output "cloudsql_public_ip" {
+  description = "CloudSQL public IP address (dev access)"
+  value       = google_sql_database_instance.main.public_ip_address
+}
+
 output "cloudsql_database_name" {
   description = "CloudSQL database name"
   value       = google_sql_database.main.name
@@ -102,15 +107,6 @@ output "gke_workload_sa_email" {
 output "batch_sa_email" {
   description = "Batch job service account email"
   value       = google_service_account.batch.email
-}
-
-# =============================================================================
-# VPC Connector Output
-# =============================================================================
-
-output "vpc_connector_id" {
-  description = "VPC Access Connector ID"
-  value       = google_vpc_access_connector.serverless.id
 }
 
 # =============================================================================

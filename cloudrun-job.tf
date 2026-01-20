@@ -17,14 +17,6 @@ resource "google_cloud_run_v2_job" "batch_core" {
       timeout         = var.batch_timeout
       max_retries     = 1
 
-      # CloudSQL connection (enables TCP connection to localhost:5432)
-      volumes {
-        name = "cloudsql"
-        cloud_sql_instance {
-          instances = [google_sql_database_instance.main.connection_name]
-        }
-      }
-
       containers {
         # Placeholder image for initial deployment - CI/CD will update this
         image = "gcr.io/cloudrun/hello"
@@ -35,10 +27,10 @@ resource "google_cloud_run_v2_job" "batch_core" {
           value = var.environment
         }
 
-        # Database connection - Cloud Run provides TCP proxy on localhost
+        # Database connection - Direct to CloudSQL Public IP (dev environment)
         env {
           name  = "POSTGRES_HOST"
-          value = "127.0.0.1"
+          value = google_sql_database_instance.main.public_ip_address
         }
 
         env {
@@ -80,11 +72,6 @@ resource "google_cloud_run_v2_job" "batch_core" {
         }
       }
 
-      # VPC access for internal resources
-      vpc_access {
-        connector = google_vpc_access_connector.serverless.id
-        egress    = "PRIVATE_RANGES_ONLY"
-      }
     }
   }
 

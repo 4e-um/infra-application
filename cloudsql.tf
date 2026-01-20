@@ -24,9 +24,15 @@ resource "google_sql_database_instance" "main" {
     disk_autoresize   = true
 
     ip_configuration {
-      ipv4_enabled                                  = false
+      ipv4_enabled                                  = true  # Enable for dev access
       private_network                               = local.vpc_self_link
       enable_private_path_for_google_cloud_services = true
+
+      # Allow access from anywhere (dev only - restrict in prod)
+      authorized_networks {
+        name  = "allow-all"
+        value = "0.0.0.0/0"
+      }
     }
 
     backup_configuration {
