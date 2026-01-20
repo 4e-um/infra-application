@@ -1,0 +1,77 @@
+# =============================================================================
+# Terraform Variables Example
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in the values
+# DO NOT commit terraform.tfvars to version control
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Project Configuration
+# -----------------------------------------------------------------------------
+
+project_id   = "your-gcp-project-id"
+project_name = "telecom-app"
+region       = "asia-northeast3"
+environment  = "dev"
+
+# -----------------------------------------------------------------------------
+# Database Configuration
+# -----------------------------------------------------------------------------
+
+database_password  = "your-secure-database-password"
+database_tier      = "db-f1-micro"
+database_disk_size = 10
+
+# -----------------------------------------------------------------------------
+# Redis Configuration
+# -----------------------------------------------------------------------------
+
+redis_usage_password   = "your-redis-usage-password"
+redis_message_password = "your-redis-message-password"
+redis_machine_type     = "e2-micro"
+
+# -----------------------------------------------------------------------------
+# Kafka Configuration (Confluent Cloud)
+# -----------------------------------------------------------------------------
+
+kafka_bootstrap_servers = "pkc-xxxxx.asia-northeast3.gcp.confluent.cloud:9092"
+kafka_api_key           = "your-kafka-api-key"
+kafka_api_secret        = "your-kafka-api-secret"
+
+# -----------------------------------------------------------------------------
+# Cloudflare Configuration
+# -----------------------------------------------------------------------------
+
+cloudflare_api_token = "your-cloudflare-api-token"
+cloudflare_zone_id   = "your-cloudflare-zone-id"
+domain_name          = "your-domain.com"
+
+# -----------------------------------------------------------------------------
+# GKE Configuration
+# -----------------------------------------------------------------------------
+
+gke_master_cidr = "172.16.0.0/28"
+
+# -----------------------------------------------------------------------------
+# Network Configuration
+# -----------------------------------------------------------------------------
+
+gke_subnet_cidr        = "10.0.0.0/20"
+pods_cidr              = "10.4.0.0/14"
+services_cidr          = "10.8.0.0/20"
+serverless_subnet_cidr = "10.1.0.0/28"
+
+# -----------------------------------------------------------------------------
+# Cloud Run Job Configuration
+# -----------------------------------------------------------------------------
+
+batch_cpu_limit    = "2"
+batch_memory_limit = "2Gi"
+batch_timeout      = "3600s"
+
+# -----------------------------------------------------------------------------
+# GitHub Actions Configuration
+# -----------------------------------------------------------------------------
+
+github_org   = "your-github-org"
+github_repos = ["api-core", "api-usage", "api-message", "batch-core"]
