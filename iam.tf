@@ -105,6 +105,9 @@ resource "google_service_account_iam_binding" "gke_workload_identity" {
     "serviceAccount:${local.project_id}.svc.id.goog[${local.k8s_namespace}/${local.services.api_usage}]",
     "serviceAccount:${local.project_id}.svc.id.goog[${local.k8s_namespace}/${local.services.api_message}]",
   ]
+
+  # GKE cluster must be created first to establish the workload identity pool
+  depends_on = [google_container_cluster.main]
 }
 
 # -----------------------------------------------------------------------------

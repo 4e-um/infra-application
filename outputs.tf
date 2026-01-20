@@ -132,26 +132,26 @@ output "api_domain" {
 }
 
 # =============================================================================
-# GitHub Actions Outputs
+# GitHub Actions Outputs (conditional - only when github_org is set)
 # =============================================================================
 
 output "github_actions_sa_email" {
   description = "GitHub Actions service account email"
-  value       = google_service_account.github_actions.email
+  value       = local.github_enabled ? google_service_account.github_actions[0].email : null
 }
 
 output "github_actions_workload_identity_provider" {
   description = "Workload Identity Provider for GitHub Actions"
-  value       = google_iam_workload_identity_pool_provider.github.name
+  value       = local.github_enabled ? google_iam_workload_identity_pool_provider.github[0].name : null
 }
 
 output "github_actions_config" {
   description = "GitHub Actions workflow configuration snippet"
-  value       = <<-EOT
-    # Add to your GitHub Actions workflow:
-    - uses: google-github-actions/auth@v2
-      with:
-        workload_identity_provider: '${google_iam_workload_identity_pool_provider.github.name}'
-        service_account: '${google_service_account.github_actions.email}'
-  EOT
+  value = local.github_enabled ? join("\n", [
+    "# Add to your GitHub Actions workflow:",
+    "- uses: google-github-actions/auth@v2",
+    "  with:",
+    "    workload_identity_provider: '${google_iam_workload_identity_pool_provider.github[0].name}'",
+    "    service_account: '${google_service_account.github_actions[0].email}'"
+  ]) : null
 }

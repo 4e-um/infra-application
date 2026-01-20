@@ -28,4 +28,7 @@ locals {
     api_message = "api-message"
     batch_core  = "batch-core"
   }
+
+  # GitHub Actions WIF enabled check
+  github_enabled = var.github_org != "" && length(var.github_repos) > 0
 }

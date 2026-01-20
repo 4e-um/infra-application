@@ -26,7 +26,8 @@ resource "google_cloud_run_v2_job" "batch_core" {
       }
 
       containers {
-        image = "${local.artifact_registry_url}/batch-core:latest"
+        # Placeholder image for initial deployment - CI/CD will update this
+        image = "gcr.io/cloudrun/hello"
 
         # Environment variables
         env {

@@ -15,7 +15,7 @@ GKE AutoPilot, CloudSQL, Redis, Cloud Run Job 등 애플리케이션 인프라�
 | Secret Manager | 민감 정보 저장 (CSI Driver로 Pod에 마운트) |
 | Service Accounts | 워크로드별 서비스 계정 |
 | VPC Connector | Cloud Run VPC 연결 |
-| GitHub Actions WIF | CI/CD 인증 |
+| GitHub Actions WIF | CI/CD 인증 **(선택사항)** |
 | Cloudflare DNS | API 도메인 설정 |
 | **K8s Namespace** | app 네임스페이스 (Terraform 관리) |
 | **K8s SecretProviderClass** | Secret Manager CSI Driver 설정 (Terraform 관리) |
@@ -126,9 +126,12 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 | `batch_cpu_limit` | string | `"2"` | Batch Job CPU |
 | `batch_memory_limit` | string | `"2Gi"` | Batch Job 메모리 |
 | `batch_timeout` | string | `"3600s"` | Batch Job 타임아웃 |
-| `github_org` | string | `""` | GitHub 조직명 |
-| `github_repos` | list | `["api-core", ...]` | GitHub 저장소 목록 |
+| `github_org` | string | `""` | GitHub 조직명 (WIF 활성화 시 필수) |
+| `github_repos` | list | `["api-core", ...]` | GitHub 저장소 목록 (WIF 활성화 시 필수) |
 | `aes_secret_key` | string | `""` | AES 암호화 키 (32자) |
+
+> **Note**: `github_org`와 `github_repos`가 모두 설정된 경우에만 GitHub Actions WIF 리소스가 생성됩니다.
+> 설정하지 않으면 GitHub Actions에서 별도의 Service Account Key (JSON)를 사용해야 합니다.
 
 ### 4. 환경 변수
 
@@ -154,9 +157,45 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 | `cloudrun_job_name` | Cloud Run Job 이름 |
 | `load_balancer_ip` | 로드밸런서 IP |
 | `api_domain` | API 도메인 |
-| `github_actions_sa_email` | GitHub Actions SA 이메일 |
-| `github_actions_workload_identity_provider` | WIF Provider |
-| `github_actions_config` | GitHub Actions 설정 예시 |
+| `github_actions_sa_email` | GitHub Actions SA 이메일 (WIF 설정 시) |
+| `github_actions_workload_identity_provider` | WIF Provider (WIF 설정 시) |
+| `github_actions_config` | GitHub Actions 설정 예시 (WIF 설정 시) |
+
+## Cloud Run Job (Batch)
+
+### 초기 배포
+
+Cloud Run Job은 **초기 배포 시 placeholder 이미지**(`gcr.io/cloudrun/hello`)를 사용합니다.
+
+```
+초기 Terraform Apply
+         │
+         ▼
+┌─────────────────────────────┐
+│ Cloud Run Job 생성          │
+│ image: gcr.io/cloudrun/hello│  ← placeholder
+└─────────────────────────────┘
+         │
+         ▼
+   CI/CD 파이프라인
+         │
+         ▼
+┌─────────────────────────────┐
+│ Cloud Run Job 업데이트       │
+│ image: .../batch-core:v1.0  │  ← 실제 이미지
+└─────────────────────────────┘
+```
+
+### 이미지 업데이트
+
+Terraform은 `lifecycle { ignore_changes = [image] }`로 이미지 변경을 무시합니다.
+CI/CD에서 직접 업데이트:
+
+```bash
+gcloud run jobs update telecom-app-batch-core \
+  --image asia-northeast3-docker.pkg.dev/PROJECT_ID/telecom-app-repo/batch-core:v1.0.0 \
+  --region asia-northeast3
+```
 
 ## 배포 후 작업
 
@@ -198,7 +237,9 @@ kubectl apply -f -backends/api-message/k8s/hpa.yaml
 
 또는 GitHub Actions가 자동으로 배포 (main 브랜치 push 시)
 
-### 3. GitHub Actions 설정
+### 3. GitHub Actions 설정 (선택사항)
+
+> **Note**: `github_org`와 `github_repos` 변수를 설정한 경우에만 해당
 
 Outputs의 `github_actions_config` 참고하여 워크플로우 설정:
 
@@ -207,6 +248,14 @@ Outputs의 `github_actions_config` 참고하여 워크플로우 설정:
   with:
     workload_identity_provider: 'projects/.../providers/github-provider'
     service_account: 'telecom-app-github-actions@....iam.gserviceaccount.com'
+```
+
+WIF를 설정하지 않은 경우, Service Account Key를 GitHub Secrets에 저장하여 사용:
+
+```yaml
+- uses: google-github-actions/auth@v2
+  with:
+    credentials_json: '${{ secrets.GCP_SA_KEY }}'
 ```
 
 ## 예상 비용 (dev 환경, 월간)

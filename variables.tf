@@ -154,7 +154,7 @@ variable "aes_secret_key" {
 variable "github_org" {
   description = "GitHub organization name for Workload Identity Federation"
   type        = string
-  default     = ""
+  default     = "4e-um"
 }
 
 variable "github_repos" {
