@@ -89,6 +89,15 @@ resource "google_project_iam_member" "github_actions_storage" {
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
+# Cloud Run Developer (deploy Cloud Run Jobs)
+resource "google_project_iam_member" "github_actions_run" {
+  count = local.github_enabled ? 1 : 0
+
+  project = local.project_id
+  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.github_actions[0].email}"
+}
+
 # -----------------------------------------------------------------------------
 # Workload Identity Binding
 # -----------------------------------------------------------------------------
