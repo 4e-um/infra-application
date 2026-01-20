@@ -17,7 +17,7 @@ resource "google_cloud_run_v2_job" "batch_core" {
       timeout         = var.batch_timeout
       max_retries     = 1
 
-      # CloudSQL Proxy volume
+      # CloudSQL connection (enables TCP connection to localhost:5432)
       volumes {
         name = "cloudsql"
         cloud_sql_instance {
@@ -35,9 +35,15 @@ resource "google_cloud_run_v2_job" "batch_core" {
           value = var.environment
         }
 
+        # Database connection - Cloud Run provides TCP proxy on localhost
         env {
           name  = "POSTGRES_HOST"
-          value = "/cloudsql/${google_sql_database_instance.main.connection_name}"
+          value = "127.0.0.1"
+        }
+
+        env {
+          name  = "POSTGRES_PORT"
+          value = "5432"
         }
 
         env {
@@ -63,12 +69,6 @@ resource "google_cloud_run_v2_job" "batch_core" {
               version = "latest"
             }
           }
-        }
-
-        # Mount CloudSQL proxy socket
-        volume_mounts {
-          name       = "cloudsql"
-          mount_path = "/cloudsql"
         }
 
         # Resource limits
