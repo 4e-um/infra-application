@@ -27,8 +27,6 @@ locals {
   vpc_self_link          = data.terraform_remote_state.bootstrap.outputs.vpc_self_link
   main_subnet_id         = data.terraform_remote_state.bootstrap.outputs.main_subnet_id
   main_subnet_name       = data.terraform_remote_state.bootstrap.outputs.main_subnet_name
-  main_subnet_self_link  = data.terraform_remote_state.bootstrap.outputs.main_subnet_self_link
-  serverless_subnet_id   = data.terraform_remote_state.bootstrap.outputs.serverless_subnet_id
-  serverless_subnet_name = data.terraform_remote_state.bootstrap.outputs.serverless_subnet_name
-  region                 = data.terraform_remote_state.bootstrap.outputs.region
+  main_subnet_self_link = data.terraform_remote_state.bootstrap.outputs.main_subnet_self_link
+  region                = data.terraform_remote_state.bootstrap.outputs.region
 }
