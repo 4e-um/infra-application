@@ -30,15 +30,16 @@ resource "kubernetes_namespace" "app" {
 # SecretProviderClass (Secret Manager CSI Driver)
 # -----------------------------------------------------------------------------
 # Pod에서 Secret Manager의 비밀을 파일로 마운트
+# kubectl provider 사용 (plan 단계에서 API 연결 안함)
 
 # api-core용 SecretProviderClass
-resource "kubernetes_manifest" "secret_provider_api_core" {
-  manifest = {
+resource "kubectl_manifest" "secret_provider_api_core" {
+  yaml_body = yamlencode({
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
     metadata = {
       name      = "api-core-secrets"
-      namespace = kubernetes_namespace.app.metadata[0].name
+      namespace = local.k8s_namespace
     }
     spec = {
       provider = "gcp"
@@ -63,7 +64,7 @@ resource "kubernetes_manifest" "secret_provider_api_core" {
         ])
       }
     }
-  }
+  })
 
   depends_on = [
     kubernetes_namespace.app,
@@ -75,13 +76,13 @@ resource "kubernetes_manifest" "secret_provider_api_core" {
 }
 
 # api-usage용 SecretProviderClass
-resource "kubernetes_manifest" "secret_provider_api_usage" {
-  manifest = {
+resource "kubectl_manifest" "secret_provider_api_usage" {
+  yaml_body = yamlencode({
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
     metadata = {
       name      = "api-usage-secrets"
-      namespace = kubernetes_namespace.app.metadata[0].name
+      namespace = local.k8s_namespace
     }
     spec = {
       provider = "gcp"
@@ -114,7 +115,7 @@ resource "kubernetes_manifest" "secret_provider_api_usage" {
         ])
       }
     }
-  }
+  })
 
   depends_on = [
     kubernetes_namespace.app,
@@ -128,13 +129,13 @@ resource "kubernetes_manifest" "secret_provider_api_usage" {
 }
 
 # api-message용 SecretProviderClass
-resource "kubernetes_manifest" "secret_provider_api_message" {
-  manifest = {
+resource "kubectl_manifest" "secret_provider_api_message" {
+  yaml_body = yamlencode({
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
     metadata = {
       name      = "api-message-secrets"
-      namespace = kubernetes_namespace.app.metadata[0].name
+      namespace = local.k8s_namespace
     }
     spec = {
       provider = "gcp"
@@ -164,15 +165,14 @@ resource "kubernetes_manifest" "secret_provider_api_message" {
             resourceName = "projects/${local.project_id}/secrets/${var.project_name}-kafka-credentials/versions/latest"
             path         = "kafka-credentials"
           }
-          ],
-          # AES Secret Key (optional)
-          var.aes_secret_key != "" ? [{
-            resourceName = "projects/${local.project_id}/secrets/${var.project_name}-aes-secret-key/versions/latest"
-            path         = "aes-secret-key"
+        ],
+        var.aes_secret_key != "" ? [{
+          resourceName = "projects/${local.project_id}/secrets/${var.project_name}-aes-secret-key/versions/latest"
+          path         = "aes-secret-key"
         }] : []))
       }
     }
-  }
+  })
 
   depends_on = [
     kubernetes_namespace.app,
@@ -232,7 +232,7 @@ resource "kubernetes_ingress_v1" "api" {
     namespace = kubernetes_namespace.app.metadata[0].name
 
     annotations = {
-      "kubernetes.io/ingress.class"                 = "gce"
+      "kubernetes.io/ingress.class"                  = "gce"
       "kubernetes.io/ingress.global-static-ip-name" = google_compute_global_address.lb.name
       "kubernetes.io/ingress.allow-http"            = "true"
     }
@@ -322,16 +322,15 @@ resource "kubernetes_ingress_v1" "api" {
 # -----------------------------------------------------------------------------
 # Backend Config (GKE-specific CRD)
 # -----------------------------------------------------------------------------
-# Note: BackendConfig is a GKE CRD, using kubernetes_manifest
-# This configures health checks for the GCE Ingress Controller
+# kubectl provider 사용 (plan 단계에서 API 연결 안함)
 
-resource "kubernetes_manifest" "backend_config" {
-  manifest = {
+resource "kubectl_manifest" "backend_config" {
+  yaml_body = yamlencode({
     apiVersion = "cloud.google.com/v1"
     kind       = "BackendConfig"
     metadata = {
       name      = "api-backend-config"
-      namespace = kubernetes_namespace.app.metadata[0].name
+      namespace = local.k8s_namespace
     }
     spec = {
       healthCheck = {
@@ -347,7 +346,7 @@ resource "kubernetes_manifest" "backend_config" {
         drainingTimeoutSec = 30
       }
     }
-  }
+  })
 
   depends_on = [kubernetes_namespace.app]
 }

@@ -14,6 +14,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.35"
     }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.14"
+    }
     cloudflare = {
       source  = "cloudflare/cloudflare"
       version = "~> 5.0"
@@ -76,4 +80,11 @@ provider "kubernetes" {
   host                   = "https://${google_container_cluster.main.endpoint}"
   token                  = data.google_client_config.default.access_token
   cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
+}
+
+provider "kubectl" {
+  host                   = "https://${google_container_cluster.main.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
+  load_config_file       = false
 }

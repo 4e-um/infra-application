@@ -12,13 +12,13 @@ GKE AutoPilot, CloudSQL, Redis, Cloud Run Job 등 애플리케이션 인프라�
 | Cloud Run Job | batch-core 배치 작업 |
 | Cloud Scheduler | 월간 배치 스케줄러 |
 | Artifact Registry | Docker 이미지 저장소 |
-| Secret Manager | 민감 정보 저장 |
+| Secret Manager | 민감 정보 저장 (CSI Driver로 Pod에 마운트) |
 | Service Accounts | 워크로드별 서비스 계정 |
 | VPC Connector | Cloud Run VPC 연결 |
 | GitHub Actions WIF | CI/CD 인증 |
 | Cloudflare DNS | API 도메인 설정 |
 | **K8s Namespace** | app 네임스페이스 (Terraform 관리) |
-| **K8s Secrets** | DB, Redis, Kafka 자격증명 (Terraform 관리) |
+| **K8s SecretProviderClass** | Secret Manager CSI Driver 설정 (Terraform 관리) |
 | **K8s Service Accounts** | Workload Identity 바인딩 (Terraform 관리) |
 | **K8s Ingress** | GCE Ingress + BackendConfig (Terraform 관리) |
 
@@ -46,12 +46,33 @@ GKE AutoPilot, CloudSQL, Redis, Cloud Run Job 등 애플리케이션 인프라�
        ┌───────────────────────┼───────────────────────┐
        │                       │                       │
   [CloudSQL]           [Confluent Cloud]       [Secret Manager]
-  (PostgreSQL)             (Kafka)
+  (PostgreSQL)             (Kafka)            (CSI Driver 마운트)
 
 [Cloud Scheduler] ──► [Cloud Run Job: batch-core]
    (월 1회)                    │
                          [CloudSQL 연결]
 ```
+
+## Secret Manager CSI Driver
+
+Pod에서 Secret Manager의 비밀을 파일로 직접 마운트합니다:
+
+```
+Secret Manager                     Pod Mount Path
+────────────────────────────────────────────────────
+telecom-app-db-user              → /secrets/db-username
+telecom-app-db-password          → /secrets/db-password
+telecom-app-db-connection-name   → /secrets/db-connection-name
+telecom-app-redis-*-endpoint     → /secrets/redis-endpoint
+telecom-app-redis-*-password     → /secrets/redis-password
+telecom-app-kafka-credentials    → /secrets/kafka-credentials (JSON)
+telecom-app-aes-secret-key       → /secrets/aes-secret-key (optional)
+```
+
+장점:
+- Secret이 K8s etcd에 저장되지 않음
+- Secret Manager에서 직접 최신 버전 로드
+- 감사 로그 자동 기록
 
 ## 사전 요구사항
 
@@ -73,7 +94,7 @@ GKE AutoPilot, CloudSQL, Redis, Cloud Run Job 등 애플리케이션 인프라�
 bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 수 있도록 설정:
 
 - Terraform Cloud: Settings → General → Remote state sharing
-- `infra-bootstrap` 워크스페이스 공유 허용
+- `telecom-app-bootstrap` 워크스페이스 공유 허용
 
 ### 3. 변수 설정
 
@@ -96,7 +117,7 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `bootstrap_workspace_name` | string | `"infra-bootstrap"` | Bootstrap 워크스페이스명 |
+| `bootstrap_workspace_name` | string | `"telecom-app-bootstrap"` | Bootstrap 워크스페이스명 |
 | `project_name` | string | `"telecom-app"` | 리소스 이름 접두사 |
 | `environment` | string | `"dev"` | 환경 |
 | `database_tier` | string | `"db-f1-micro"` | CloudSQL 인스턴스 타입 |
@@ -114,7 +135,6 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 | Variable | Description |
 |----------|-------------|
 | `GOOGLE_CREDENTIALS` | GCP Service Account JSON 키 |
-| `CLOUDFLARE_API_TOKEN` | (선택) Provider 인증용 |
 
 ## Outputs
 
@@ -142,7 +162,7 @@ bootstrap 워크스페이스의 상태를 이 워크스페이스에서 읽을 �
 
 Terraform apply 완료 시 자동으로 생성되는 K8s 리소스:
 - Namespace (`app`)
-- Secrets (DB, Redis, Kafka 자격증명 - Terraform outputs 사용)
+- SecretProviderClass (Secret Manager CSI Driver 설정)
 - Service Accounts (Workload Identity 바인딩)
 - Ingress + BackendConfig
 
@@ -217,14 +237,14 @@ terraform plan
 
 ```
 infra-application/
-├── main.tf              # Provider, backend 설정
+├── main.tf              # Provider 설정 (google, kubernetes, kubectl)
 ├── data.tf              # Remote state 참조
 ├── locals.tf            # 로컬 변수
 ├── variables.tf         # 입력 변수
 ├── outputs.tf           # 출력값
 ├── vpc.tf               # VPC Connector, LB IP
 ├── firewall.tf          # Redis 외부 접근 규칙
-├── gke.tf               # GKE AutoPilot
+├── gke.tf               # GKE AutoPilot (Secret Manager CSI 활성화)
 ├── cloudsql.tf          # CloudSQL PostgreSQL
 ├── redis.tf             # Redis 모듈 호출
 ├── cloudrun-job.tf      # Cloud Run Job
@@ -235,10 +255,20 @@ infra-application/
 ├── iam.tf               # IAM 바인딩
 ├── github-actions.tf    # GitHub WIF
 ├── cloudflare.tf        # DNS 레코드
-├── kubernetes.tf        # K8s 리소스 (Namespace, Secrets, SA, Ingress)
+├── kubernetes.tf        # K8s 리소스 (Namespace, SecretProviderClass, SA, Ingress)
 └── modules/
     └── redis/           # Redis VM 모듈
         ├── main.tf
         ├── variables.tf
         └── outputs.tf
 ```
+
+## Providers
+
+| Provider | Version | 용도 |
+|----------|---------|------|
+| google | ~> 7.0 | GCP 리소스 |
+| google-beta | ~> 7.0 | GCP Beta 기능 |
+| kubernetes | ~> 2.35 | K8s 기본 리소스 |
+| kubectl | ~> 1.14 | K8s CRD (SecretProviderClass, BackendConfig) |
+| cloudflare | ~> 5.0 | DNS 레코드 |
