@@ -98,6 +98,15 @@ resource "google_project_iam_member" "github_actions_run" {
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
+# Act as Batch SA (required to update Cloud Run Job that uses batch SA)
+resource "google_service_account_iam_member" "github_actions_act_as_batch" {
+  count = local.github_enabled ? 1 : 0
+
+  service_account_id = google_service_account.batch.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions[0].email}"
+}
+
 # -----------------------------------------------------------------------------
 # Workload Identity Binding
 # -----------------------------------------------------------------------------
