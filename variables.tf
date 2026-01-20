@@ -10,7 +10,7 @@ variable "terraform_cloud_org" {
 variable "bootstrap_workspace_name" {
   description = "Bootstrap workspace name in Terraform Cloud"
   type        = string
-  default     = "telecom-app-bootstrap"
+  default     = "infra-bootstrap"
 }
 
 # =============================================================================
