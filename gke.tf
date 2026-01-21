@@ -1,12 +1,16 @@
 # =============================================================================
-# GKE AutoPilot Cluster
+# GKE Standard Cluster (Zonal - Dev Environment)
 # =============================================================================
 
 resource "google_container_cluster" "main" {
-  name             = "${var.project_name}-cluster"
-  project          = local.project_id
-  location         = local.region
-  enable_autopilot = true
+  name     = "${var.project_name}-cluster"
+  project  = local.project_id
+  location = local.zone # Zonal cluster (single zone for dev)
+
+  # We can't create a cluster with no node pool, so we create the smallest
+  # possible default node pool and immediately delete it.
+  remove_default_node_pool = true
+  initial_node_count       = 1
 
   network    = local.vpc_name
   subnetwork = local.main_subnet_name
@@ -16,7 +20,7 @@ resource "google_container_cluster" "main" {
     services_secondary_range_name = "services"
   }
 
-  # Public cluster - nodes have external IPs (no NAT needed)
+  # Public cluster
   private_cluster_config {
     enable_private_nodes    = false
     enable_private_endpoint = false
@@ -37,33 +41,9 @@ resource "google_container_cluster" "main" {
     channel = "REGULAR"
   }
 
-  # Autopilot manages most settings, but we can configure some
-  cluster_autoscaling {
-    auto_provisioning_defaults {
-      service_account = google_service_account.gke_workload.email
-      oauth_scopes = [
-        "https://www.googleapis.com/auth/cloud-platform"
-      ]
-    }
-  }
-
-  # Enable GKE Dataplane V2 (built-in with Autopilot)
-  datapath_provider = "ADVANCED_DATAPATH"
-
-  # Enable vertical pod autoscaling
-  vertical_pod_autoscaling {
-    enabled = true
-  }
-
   # Secret Manager addon for CSI Driver
   secret_manager_config {
     enabled = true
-  }
-
-  # Security configurations
-  security_posture_config {
-    mode               = "BASIC"
-    vulnerability_mode = "VULNERABILITY_BASIC"
   }
 
   deletion_protection = false
@@ -71,4 +51,41 @@ resource "google_container_cluster" "main" {
   depends_on = [
     google_service_account.gke_workload
   ]
+}
+
+# =============================================================================
+# Node Pool (Minimal for Dev)
+# =============================================================================
+
+resource "google_container_node_pool" "main" {
+  name     = "${var.project_name}-pool"
+  project  = local.project_id
+  location = local.zone
+  cluster  = google_container_cluster.main.name
+
+  node_count = 1 # Single node for dev
+
+  node_config {
+    machine_type    = "e2-medium" # 2 vCPU, 4GB RAM - sufficient for dev
+    service_account = google_service_account.gke_workload.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
+    # Spot VMs for cost savings (dev only)
+    spot = true
+
+    labels = local.common_labels
+
+    tags = ["gke-node"]
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
 }
