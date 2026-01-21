@@ -10,14 +10,6 @@ terraform {
       source  = "hashicorp/google-beta"
       version = "~> 7.0"
     }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.35"
-    }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.14"
-    }
     cloudflare = {
       source  = "cloudflare/cloudflare"
       version = "~> 5.0"
@@ -71,20 +63,8 @@ provider "cloudflare" {
 }
 
 # =============================================================================
-# Kubernetes Provider (authenticated via GKE)
+# Kubernetes Resources
 # =============================================================================
-
-data "google_client_config" "default" {}
-
-provider "kubernetes" {
-  host                   = "https://${google_container_cluster.main.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
-}
-
-provider "kubectl" {
-  host                   = "https://${google_container_cluster.main.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(google_container_cluster.main.master_auth[0].cluster_ca_certificate)
-  load_config_file       = false
-}
+# NOTE: Kubernetes provider removed. K8s resources are managed via CI/CD.
+# See: -backends/api-*/k8s/ for manifest files
+# =============================================================================
