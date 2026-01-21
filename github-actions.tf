@@ -71,12 +71,12 @@ resource "google_project_iam_member" "github_actions_artifact_registry" {
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
-# GKE Developer (deploy to cluster)
+# GKE Admin (deploy to cluster + install cluster-wide operators like ESO)
 resource "google_project_iam_member" "github_actions_gke" {
   count = local.github_enabled ? 1 : 0
 
   project = local.project_id
-  role    = "roles/container.developer"
+  role    = "roles/container.admin"
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
