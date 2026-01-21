@@ -88,6 +88,10 @@ resource "google_sql_database" "main" {
   name     = "app_db"
   project  = local.project_id
   instance = google_sql_database_instance.main.name
+
+  # user보다 먼저 삭제되도록 설정 (삭제 시 역순 적용)
+  # app_user가 소유한 객체들이 database와 함께 삭제되어야 user 삭제 가능
+  depends_on = [google_sql_user.main]
 }
 
 resource "google_sql_user" "main" {
