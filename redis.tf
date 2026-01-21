@@ -12,7 +12,7 @@ module "redis_usage" {
   zone                  = local.zone
   subnetwork            = local.main_subnet_self_link
   redis_password        = var.redis_usage_password
-  service_account_email = google_service_account.redis.email
+  service_account_email = google_service_account.app.email
   machine_type          = var.redis_machine_type
 
   labels = local.common_labels
@@ -28,7 +28,7 @@ module "redis_message" {
   zone                  = local.zone
   subnetwork            = local.main_subnet_self_link
   redis_password        = var.redis_message_password
-  service_account_email = google_service_account.redis.email
+  service_account_email = google_service_account.app.email
   machine_type          = var.redis_machine_type
 
   labels = local.common_labels

@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_job" "batch_core" {
     task_count  = 1
 
     template {
-      service_account = google_service_account.batch.email
+      service_account = google_service_account.app.email
       timeout         = var.batch_timeout
       max_retries     = 1
 

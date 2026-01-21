@@ -186,38 +186,18 @@ resource "kubectl_manifest" "secret_provider_api_message" {
 }
 
 # -----------------------------------------------------------------------------
-# Service Accounts (Workload Identity)
+# Service Account (Unified - managed by CI/CD, defined here for reference)
 # -----------------------------------------------------------------------------
+# Note: ServiceAccount is created via k8s/serviceaccount.yaml in each repo
+# This ensures Workload Identity binding works with the 'app' SA
 
-resource "kubernetes_service_account" "api_core" {
+resource "kubernetes_service_account" "app" {
   metadata {
-    name      = local.services.api_core
+    name      = "app"
     namespace = kubernetes_namespace.app.metadata[0].name
 
     annotations = {
-      "iam.gke.io/gcp-service-account" = google_service_account.gke_workload.email
-    }
-  }
-}
-
-resource "kubernetes_service_account" "api_usage" {
-  metadata {
-    name      = local.services.api_usage
-    namespace = kubernetes_namespace.app.metadata[0].name
-
-    annotations = {
-      "iam.gke.io/gcp-service-account" = google_service_account.gke_workload.email
-    }
-  }
-}
-
-resource "kubernetes_service_account" "api_message" {
-  metadata {
-    name      = local.services.api_message
-    namespace = kubernetes_namespace.app.metadata[0].name
-
-    annotations = {
-      "iam.gke.io/gcp-service-account" = google_service_account.gke_workload.email
+      "iam.gke.io/gcp-service-account" = google_service_account.app.email
     }
   }
 }

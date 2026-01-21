@@ -49,7 +49,7 @@ resource "google_container_cluster" "main" {
   deletion_protection = false
 
   depends_on = [
-    google_service_account.gke_workload
+    google_service_account.app
   ]
 }
 
@@ -67,7 +67,7 @@ resource "google_container_node_pool" "main" {
 
   node_config {
     machine_type    = "e2-medium" # 2 vCPU, 4GB RAM - sufficient for dev
-    service_account = google_service_account.gke_workload.email
+    service_account = google_service_account.app.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]

@@ -21,7 +21,7 @@ output "gke_cluster_ca_certificate" {
 
 output "gke_get_credentials_command" {
   description = "Command to get GKE credentials"
-  value       = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --region ${local.region} --project ${local.project_id}"
+  value       = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --zone ${local.zone} --project ${local.project_id}"
 }
 
 # =============================================================================
@@ -96,17 +96,12 @@ output "cloudrun_job_name" {
 }
 
 # =============================================================================
-# Service Account Outputs
+# Service Account Output
 # =============================================================================
 
-output "gke_workload_sa_email" {
-  description = "GKE Workload Identity service account email"
-  value       = google_service_account.gke_workload.email
-}
-
-output "batch_sa_email" {
-  description = "Batch job service account email"
-  value       = google_service_account.batch.email
+output "app_sa_email" {
+  description = "Unified app service account email"
+  value       = google_service_account.app.email
 }
 
 # =============================================================================

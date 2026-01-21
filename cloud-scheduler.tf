@@ -22,7 +22,7 @@ resource "google_cloud_scheduler_job" "invoice_job" {
     uri         = "https://${local.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${local.project_id}/jobs/${google_cloud_run_v2_job.batch_core.name}:run"
 
     oauth_token {
-      service_account_email = google_service_account.scheduler.email
+      service_account_email = google_service_account.app.email
       scope                 = "https://www.googleapis.com/auth/cloud-platform"
     }
 
@@ -63,7 +63,7 @@ resource "google_cloud_scheduler_job" "invoice_item_job" {
     uri         = "https://${local.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${local.project_id}/jobs/${google_cloud_run_v2_job.batch_core.name}:run"
 
     oauth_token {
-      service_account_email = google_service_account.scheduler.email
+      service_account_email = google_service_account.app.email
       scope                 = "https://www.googleapis.com/auth/cloud-platform"
     }
 
