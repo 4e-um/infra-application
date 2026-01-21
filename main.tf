@@ -23,8 +23,9 @@ terraform {
   # Terraform Cloud/Scalr backend
   # Set organization via CLI or env: TF_CLOUD_ORGANIZATION
   cloud {
+    organization = "4e-um"
     workspaces {
-      name = "telecom-app-dev"
+      name = "infra-application"
     }
   }
 
