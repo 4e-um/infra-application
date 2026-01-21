@@ -82,4 +82,9 @@ resource "google_cloud_run_v2_job" "batch_core" {
       template[0].template[0].containers[0].image,
     ]
   }
+
+  depends_on = [
+    google_project_iam_member.app_secrets,
+    google_project_iam_member.app_cloudsql,
+  ]
 }
