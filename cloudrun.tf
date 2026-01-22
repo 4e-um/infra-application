@@ -457,12 +457,32 @@ resource "google_cloud_run_v2_service" "api_message" {
         }
       }
 
-      # Kafka credentials
+      # Kafka credentials (individual env vars for Spring Boot)
       env {
-        name = "KAFKA_CREDENTIALS"
+        name = "KAFKA_BOOTSTRAP_SERVERS"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.kafka.secret_id
+            secret  = google_secret_manager_secret.kafka_bootstrap_servers.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "KAFKA_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.kafka_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "KAFKA_API_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.kafka_api_secret.secret_id
             version = "latest"
           }
         }
