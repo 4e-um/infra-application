@@ -94,6 +94,30 @@ resource "google_cloud_run_v2_service" "api_core" {
       ports {
         container_port = 8080
       }
+
+      # Startup probe: Spring Boot 시작 대기 (최대 300초)
+      startup_probe {
+        http_get {
+          path = "/actuator/health"
+          port = 8080
+        }
+        initial_delay_seconds = 10
+        timeout_seconds       = 5
+        period_seconds        = 10
+        failure_threshold     = 30
+      }
+
+      # Liveness probe: 앱 정상 동작 확인
+      liveness_probe {
+        http_get {
+          path = "/actuator/health/liveness"
+          port = 8080
+        }
+        initial_delay_seconds = 0
+        timeout_seconds       = 5
+        period_seconds        = 30
+        failure_threshold     = 3
+      }
     }
 
     # CloudSQL 연결 볼륨
@@ -239,6 +263,30 @@ resource "google_cloud_run_v2_service" "api_usage" {
       ports {
         container_port = 8080
       }
+
+      # Startup probe: Spring Boot 시작 대기 (최대 300초)
+      startup_probe {
+        http_get {
+          path = "/actuator/health"
+          port = 8080
+        }
+        initial_delay_seconds = 10
+        timeout_seconds       = 5
+        period_seconds        = 10
+        failure_threshold     = 30
+      }
+
+      # Liveness probe: 앱 정상 동작 확인
+      liveness_probe {
+        http_get {
+          path = "/actuator/health/liveness"
+          port = 8080
+        }
+        initial_delay_seconds = 0
+        timeout_seconds       = 5
+        period_seconds        = 30
+        failure_threshold     = 3
+      }
     }
 
     # CloudSQL 연결 볼륨
@@ -374,6 +422,30 @@ resource "google_cloud_run_v2_service" "api_message" {
 
       ports {
         container_port = 8080
+      }
+
+      # Startup probe: Spring Boot 시작 대기 (최대 300초)
+      startup_probe {
+        http_get {
+          path = "/actuator/health"
+          port = 8080
+        }
+        initial_delay_seconds = 10
+        timeout_seconds       = 5
+        period_seconds        = 10
+        failure_threshold     = 30
+      }
+
+      # Liveness probe: 앱 정상 동작 확인
+      liveness_probe {
+        http_get {
+          path = "/actuator/health/liveness"
+          port = 8080
+        }
+        initial_delay_seconds = 0
+        timeout_seconds       = 5
+        period_seconds        = 30
+        failure_threshold     = 3
       }
     }
 
