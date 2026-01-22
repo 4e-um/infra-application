@@ -6,6 +6,27 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
+# Import: 기존 리소스가 있으면 생성하지 않고 import
+# -----------------------------------------------------------------------------
+# GCP에 이미 존재하는 Workload Identity Pool/Provider를 Terraform state로 가져옴
+# - 리소스가 존재하면: state로 import 후 Terraform이 관리
+# - 리소스가 없으면: import 블록 제거 후 새로 생성
+#
+# 성공적으로 import 완료 후 이 블록들을 삭제하세요.
+# soft-delete 상태인 경우: gcloud iam workload-identity-pools undelete 먼저 실행
+# -----------------------------------------------------------------------------
+
+import {
+  to = google_iam_workload_identity_pool.github[0]
+  id = "projects/telecom-app-dev/locations/global/workloadIdentityPools/github-actions-pool"
+}
+
+import {
+  to = google_iam_workload_identity_pool_provider.github[0]
+  id = "projects/telecom-app-dev/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+}
+
+# -----------------------------------------------------------------------------
 # Workload Identity Pool
 # -----------------------------------------------------------------------------
 
