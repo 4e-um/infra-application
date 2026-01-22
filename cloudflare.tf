@@ -14,10 +14,12 @@
 # Worker Script: Cloud Run Reverse Proxy
 # -----------------------------------------------------------------------------
 
-resource "cloudflare_worker_script" "api_proxy" {
-  account_id = var.cloudflare_account_id
-  name       = "${var.project_name}-api-proxy"
-  content    = <<-EOF
+resource "cloudflare_workers_script" "api_proxy" {
+  account_id  = var.cloudflare_account_id
+  script_name = "${var.project_name}-api-proxy"
+
+  # ES Module syntax Worker
+  content = <<-EOF
     export default {
       async fetch(request, env) {
         const url = new URL(request.url);
@@ -34,27 +36,32 @@ resource "cloudflare_worker_script" "api_proxy" {
           redirect: "follow"
         });
 
-        // 응답 반환 (CORS 헤더 추가 가능)
+        // 응답 반환
         return response;
       }
     }
   EOF
 
+  main_module = "worker.js"
+
   # Cloud Run 호스트를 환경변수로 주입
-  plain_text_binding {
-    name = "CLOUD_RUN_HOST"
-    text = trimprefix(trimprefix(google_cloud_run_v2_service.api_core.uri, "https://"), "http://")
-  }
+  bindings = [
+    {
+      name = "CLOUD_RUN_HOST"
+      type = "plain_text"
+      text = trimprefix(trimprefix(google_cloud_run_v2_service.api_core.uri, "https://"), "http://")
+    }
+  ]
 }
 
 # -----------------------------------------------------------------------------
 # Worker Route: api.domain.com/* → Worker
 # -----------------------------------------------------------------------------
 
-resource "cloudflare_worker_route" "api" {
-  zone_id     = var.cloudflare_zone_id
-  pattern     = "api.${var.domain_name}/*"
-  script_name = cloudflare_worker_script.api_proxy.name
+resource "cloudflare_workers_route" "api" {
+  zone_id = var.cloudflare_zone_id
+  pattern = "api.${var.domain_name}/*"
+  script  = cloudflare_workers_script.api_proxy.script_name
 }
 
 # -----------------------------------------------------------------------------
