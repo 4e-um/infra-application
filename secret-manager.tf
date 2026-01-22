@@ -55,12 +55,12 @@ resource "google_secret_manager_secret_version" "db_connection_name" {
 }
 
 # -----------------------------------------------------------------------------
-# Kafka Credentials
+# Kafka Credentials (Individual secrets for Spring Boot env vars)
 # -----------------------------------------------------------------------------
 
-resource "google_secret_manager_secret" "kafka" {
+resource "google_secret_manager_secret" "kafka_bootstrap_servers" {
   project   = local.project_id
-  secret_id = "${var.project_name}-kafka-credentials"
+  secret_id = "${var.project_name}-kafka-bootstrap-servers"
 
   replication {
     auto {}
@@ -69,13 +69,41 @@ resource "google_secret_manager_secret" "kafka" {
   labels = local.common_labels
 }
 
-resource "google_secret_manager_secret_version" "kafka" {
-  secret = google_secret_manager_secret.kafka.id
-  secret_data = jsonencode({
-    bootstrap_servers = var.kafka_bootstrap_servers
-    api_key           = var.kafka_api_key
-    api_secret        = var.kafka_api_secret
-  })
+resource "google_secret_manager_secret_version" "kafka_bootstrap_servers" {
+  secret      = google_secret_manager_secret.kafka_bootstrap_servers.id
+  secret_data = var.kafka_bootstrap_servers
+}
+
+resource "google_secret_manager_secret" "kafka_api_key" {
+  project   = local.project_id
+  secret_id = "${var.project_name}-kafka-api-key"
+
+  replication {
+    auto {}
+  }
+
+  labels = local.common_labels
+}
+
+resource "google_secret_manager_secret_version" "kafka_api_key" {
+  secret      = google_secret_manager_secret.kafka_api_key.id
+  secret_data = var.kafka_api_key
+}
+
+resource "google_secret_manager_secret" "kafka_api_secret" {
+  project   = local.project_id
+  secret_id = "${var.project_name}-kafka-api-secret"
+
+  replication {
+    auto {}
+  }
+
+  labels = local.common_labels
+}
+
+resource "google_secret_manager_secret_version" "kafka_api_secret" {
+  secret      = google_secret_manager_secret.kafka_api_secret.id
+  secret_data = var.kafka_api_secret
 }
 
 # -----------------------------------------------------------------------------
