@@ -121,7 +121,7 @@ variable "domain_name" {
 variable "batch_cpu_limit" {
   description = "CPU limit for batch job"
   type        = string
-  default     = "2"
+  default     = "6"
 }
 
 variable "batch_memory_limit" {
