@@ -78,6 +78,27 @@ resource "google_cloud_run_v2_service" "api_core" {
         }
       }
 
+      # Ureca secrets (api-core specific)
+      env {
+        name = "URECA_SECRET_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ureca_secret_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "URECA_HASH_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ureca_hash_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       # CloudSQL Socket mount
       volume_mounts {
         name       = "cloudsql"

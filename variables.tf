@@ -147,6 +147,18 @@ variable "aes_secret_key" {
   default     = ""
 }
 
+variable "ureca_secret_key" {
+  description = "Ureca secret key for api-core encryption"
+  type        = string
+  sensitive   = true
+}
+
+variable "ureca_hash_key" {
+  description = "Ureca hash key for api-core"
+  type        = string
+  sensitive   = true
+}
+
 # =============================================================================
 # GitHub Actions Configuration
 # =============================================================================

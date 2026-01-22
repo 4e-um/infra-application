@@ -168,3 +168,39 @@ resource "google_secret_manager_secret_version" "aes_secret_key" {
   secret      = google_secret_manager_secret.aes_secret_key[0].id
   secret_data = var.aes_secret_key
 }
+
+# -----------------------------------------------------------------------------
+# Ureca Secrets (api-core)
+# -----------------------------------------------------------------------------
+
+resource "google_secret_manager_secret" "ureca_secret_key" {
+  project   = local.project_id
+  secret_id = "${var.project_name}-ureca-secret-key"
+
+  replication {
+    auto {}
+  }
+
+  labels = local.common_labels
+}
+
+resource "google_secret_manager_secret_version" "ureca_secret_key" {
+  secret      = google_secret_manager_secret.ureca_secret_key.id
+  secret_data = var.ureca_secret_key
+}
+
+resource "google_secret_manager_secret" "ureca_hash_key" {
+  project   = local.project_id
+  secret_id = "${var.project_name}-ureca-hash-key"
+
+  replication {
+    auto {}
+  }
+
+  labels = local.common_labels
+}
+
+resource "google_secret_manager_secret_version" "ureca_hash_key" {
+  secret      = google_secret_manager_secret.ureca_hash_key.id
+  secret_data = var.ureca_hash_key
+}
