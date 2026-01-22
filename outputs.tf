@@ -1,27 +1,29 @@
 # =============================================================================
-# GKE Outputs
+# Cloud Run Service Outputs
 # =============================================================================
 
-output "gke_cluster_name" {
-  description = "GKE cluster name"
-  value       = google_container_cluster.main.name
+output "cloudrun_api_core_url" {
+  description = "Cloud Run api-core service URL (public)"
+  value       = google_cloud_run_v2_service.api_core.uri
 }
 
-output "gke_cluster_endpoint" {
-  description = "GKE cluster endpoint"
-  value       = google_container_cluster.main.endpoint
-  sensitive   = true
+output "cloudrun_api_usage_url" {
+  description = "Cloud Run api-usage service URL (internal)"
+  value       = google_cloud_run_v2_service.api_usage.uri
 }
 
-output "gke_cluster_ca_certificate" {
-  description = "GKE cluster CA certificate"
-  value       = google_container_cluster.main.master_auth[0].cluster_ca_certificate
-  sensitive   = true
+output "cloudrun_api_message_url" {
+  description = "Cloud Run api-message service URL (internal)"
+  value       = google_cloud_run_v2_service.api_message.uri
 }
 
-output "gke_get_credentials_command" {
-  description = "Command to get GKE credentials"
-  value       = "gcloud container clusters get-credentials ${google_container_cluster.main.name} --zone ${local.zone} --project ${local.project_id}"
+# =============================================================================
+# Cloud Run Job Outputs
+# =============================================================================
+
+output "cloudrun_job_name" {
+  description = "Cloud Run Job name"
+  value       = google_cloud_run_v2_job.batch_core.name
 }
 
 # =============================================================================
@@ -38,13 +40,8 @@ output "cloudsql_connection_name" {
   value       = google_sql_database_instance.main.connection_name
 }
 
-output "cloudsql_private_ip" {
-  description = "CloudSQL private IP address"
-  value       = google_sql_database_instance.main.private_ip_address
-}
-
 output "cloudsql_public_ip" {
-  description = "CloudSQL public IP address (dev access)"
+  description = "CloudSQL public IP address (experimental)"
   value       = google_sql_database_instance.main.public_ip_address
 }
 
@@ -57,19 +54,9 @@ output "cloudsql_database_name" {
 # Redis Outputs
 # =============================================================================
 
-output "redis_usage_private_ip" {
-  description = "Redis usage instance private IP"
-  value       = module.redis_usage.private_ip
-}
-
 output "redis_usage_external_ip" {
   description = "Redis usage instance external IP"
   value       = module.redis_usage.external_ip
-}
-
-output "redis_message_private_ip" {
-  description = "Redis message instance private IP"
-  value       = module.redis_message.private_ip
 }
 
 output "redis_message_external_ip" {
@@ -87,30 +74,12 @@ output "artifact_registry_url" {
 }
 
 # =============================================================================
-# Cloud Run Job Outputs
-# =============================================================================
-
-output "cloudrun_job_name" {
-  description = "Cloud Run Job name"
-  value       = google_cloud_run_v2_job.batch_core.name
-}
-
-# =============================================================================
 # Service Account Output
 # =============================================================================
 
 output "app_sa_email" {
   description = "Unified app service account email"
   value       = google_service_account.app.email
-}
-
-# =============================================================================
-# Load Balancer Output
-# =============================================================================
-
-output "load_balancer_ip" {
-  description = "Global Load Balancer IP address"
-  value       = google_compute_global_address.lb.address
 }
 
 # =============================================================================

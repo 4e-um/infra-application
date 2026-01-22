@@ -71,25 +71,7 @@ resource "google_project_iam_member" "github_actions_artifact_registry" {
   member  = "serviceAccount:${google_service_account.github_actions[0].email}"
 }
 
-# GKE Admin (deploy to cluster + install cluster-wide operators like ESO)
-resource "google_project_iam_member" "github_actions_gke" {
-  count = local.github_enabled ? 1 : 0
-
-  project = local.project_id
-  role    = "roles/container.admin"
-  member  = "serviceAccount:${google_service_account.github_actions[0].email}"
-}
-
-# Storage Object Viewer (for GKE credentials)
-resource "google_project_iam_member" "github_actions_storage" {
-  count = local.github_enabled ? 1 : 0
-
-  project = local.project_id
-  role    = "roles/storage.objectViewer"
-  member  = "serviceAccount:${google_service_account.github_actions[0].email}"
-}
-
-# Cloud Run Developer (deploy Cloud Run Jobs)
+# Cloud Run Developer (deploy Cloud Run services and jobs)
 resource "google_project_iam_member" "github_actions_run" {
   count = local.github_enabled ? 1 : 0
 

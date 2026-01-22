@@ -114,7 +114,7 @@ resource "google_secret_manager_secret_version" "redis_message" {
   secret_data = var.redis_message_password
 }
 
-# Redis endpoints (IP addresses)
+# Redis endpoints (Experimental: using external IP for Cloud Run access)
 resource "google_secret_manager_secret" "redis_usage_endpoint" {
   project   = local.project_id
   secret_id = "${var.project_name}-redis-usage-endpoint"
@@ -128,7 +128,7 @@ resource "google_secret_manager_secret" "redis_usage_endpoint" {
 
 resource "google_secret_manager_secret_version" "redis_usage_endpoint" {
   secret      = google_secret_manager_secret.redis_usage_endpoint.id
-  secret_data = "${module.redis_usage.private_ip}:6379"
+  secret_data = "${module.redis_usage.external_ip}:6379" # Experimental: external IP
 }
 
 resource "google_secret_manager_secret" "redis_message_endpoint" {
@@ -144,7 +144,7 @@ resource "google_secret_manager_secret" "redis_message_endpoint" {
 
 resource "google_secret_manager_secret_version" "redis_message_endpoint" {
   secret      = google_secret_manager_secret.redis_message_endpoint.id
-  secret_data = "${module.redis_message.private_ip}:6379"
+  secret_data = "${module.redis_message.external_ip}:6379" # Experimental: external IP
 }
 
 # -----------------------------------------------------------------------------

@@ -56,17 +56,3 @@ resource "google_project_iam_member" "app_trace" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
-# -----------------------------------------------------------------------------
-# Workload Identity Binding
-# -----------------------------------------------------------------------------
-
-resource "google_service_account_iam_binding" "app_workload_identity" {
-  service_account_id = google_service_account.app.name
-  role               = "roles/iam.workloadIdentityUser"
-
-  members = [
-    "serviceAccount:${local.project_id}.svc.id.goog[${local.k8s_namespace}/app]",
-  ]
-
-  depends_on = [google_container_cluster.main]
-}

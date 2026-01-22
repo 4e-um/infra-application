@@ -1,6 +1,10 @@
 # =============================================================================
 # Cloud Run Job for Batch Processing
 # =============================================================================
+# 연결 방식: Socket Factory (Cloud Run 내장 CloudSQL 연결)
+# - VPC Connector 불필요 (비용 절감)
+# - 내부 네트워크 통신 (보안)
+# - Spring Boot에서 postgres-socket-factory 의존성 필요
 
 resource "google_cloud_run_v2_job" "batch_core" {
   name                = "${var.project_name}-batch-core"
@@ -22,20 +26,17 @@ resource "google_cloud_run_v2_job" "batch_core" {
         image = "gcr.io/cloudrun/hello"
 
         # Environment variables
+        # 프로필 조합: dev(환경) + cloudrun(DB연결방식)
         env {
           name  = "SPRING_PROFILES_ACTIVE"
-          value = var.environment
+          value = "${var.environment},cloudrun"
         }
 
-        # Database connection - Direct to CloudSQL Public IP (dev environment)
+        # Database connection via Socket Factory
+        # Spring Boot JDBC URL: jdbc:postgresql:///${POSTGRES_DATABASE}?cloudSqlInstance=${DB_INSTANCE_CONNECTION_NAME}&socketFactory=com.google.cloud.sql.postgres.SocketFactory
         env {
-          name  = "POSTGRES_HOST"
-          value = google_sql_database_instance.main.public_ip_address
-        }
-
-        env {
-          name  = "POSTGRES_PORT"
-          value = "5432"
+          name  = "DB_INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.main.connection_name
         }
 
         env {
@@ -63,12 +64,26 @@ resource "google_cloud_run_v2_job" "batch_core" {
           }
         }
 
+        # CloudSQL Socket mount (Cloud Run이 자동으로 소켓 생성)
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+
         # Resource limits
         resources {
           limits = {
             cpu    = var.batch_cpu_limit
             memory = var.batch_memory_limit
           }
+        }
+      }
+
+      # CloudSQL 연결 볼륨
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [google_sql_database_instance.main.connection_name]
         }
       }
 

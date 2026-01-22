@@ -1,5 +1,5 @@
 # =============================================================================
-# CloudSQL PostgreSQL Instance
+# CloudSQL PostgreSQL Instance (Experimental - Simplified)
 # =============================================================================
 
 resource "random_id" "db_suffix" {
@@ -13,69 +13,33 @@ resource "google_sql_database_instance" "main" {
   region              = local.region
   deletion_protection = false
 
-  # Private Service Access is configured in bootstrap
-  # VPC peering should already exist
-
   settings {
     tier              = var.database_tier
     availability_type = "ZONAL"
     disk_size         = var.database_disk_size
     disk_type         = "PD_SSD"
-    disk_autoresize   = true
+    disk_autoresize   = false # Experimental: fixed size
 
     ip_configuration {
-      ipv4_enabled                                  = true  # Enable for dev access
-      private_network                               = local.vpc_self_link
-      enable_private_path_for_google_cloud_services = true
+      ipv4_enabled = true # Experimental: Public IP only
 
-      # Allow access from anywhere (dev only - restrict in prod)
+      # Experimental: allow all IPs (for debugging convenience)
       authorized_networks {
-        name  = "allow-all"
+        name  = "allow-all-experimental"
         value = "0.0.0.0/0"
       }
     }
 
+    # Experimental: disable backups
     backup_configuration {
-      enabled                        = true
-      start_time                     = "03:00"
-      point_in_time_recovery_enabled = true
-      backup_retention_settings {
-        retained_backups = 7
-      }
+      enabled                        = false
+      point_in_time_recovery_enabled = false
     }
 
     maintenance_window {
       day          = 7 # Sunday
       hour         = 4 # 04:00 UTC (13:00 KST)
       update_track = "stable"
-    }
-
-    insights_config {
-      query_insights_enabled  = true
-      query_plans_per_minute  = 5
-      query_string_length     = 1024
-      record_application_tags = true
-      record_client_address   = true
-    }
-
-    database_flags {
-      name  = "log_checkpoints"
-      value = "on"
-    }
-
-    database_flags {
-      name  = "log_connections"
-      value = "on"
-    }
-
-    database_flags {
-      name  = "log_disconnections"
-      value = "on"
-    }
-
-    database_flags {
-      name  = "log_lock_waits"
-      value = "on"
     }
   }
 }
@@ -89,8 +53,6 @@ resource "google_sql_database" "main" {
   project  = local.project_id
   instance = google_sql_database_instance.main.name
 
-  # user보다 먼저 삭제되도록 설정 (삭제 시 역순 적용)
-  # app_user가 소유한 객체들이 database와 함께 삭제되어야 user 삭제 가능
   depends_on = [google_sql_user.main]
 }
 

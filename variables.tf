@@ -162,3 +162,37 @@ variable "github_repos" {
   type        = list(string)
   default     = ["api-core", "api-usage", "api-message", "batch-core"]
 }
+
+# =============================================================================
+# Cloud Run Service Configuration
+# =============================================================================
+
+variable "api_cpu_limit" {
+  description = "CPU limit for API services"
+  type        = string
+  default     = "1"
+}
+
+variable "api_memory_limit" {
+  description = "Memory limit for API services"
+  type        = string
+  default     = "512Mi"
+}
+
+variable "api_min_instances" {
+  description = "Minimum instances for API services"
+  type        = number
+  default     = 1
+}
+
+variable "api_max_instances" {
+  description = "Maximum instances for API services"
+  type        = number
+  default     = 10
+}
+
+variable "api_concurrency" {
+  description = "Max concurrent requests per instance"
+  type        = number
+  default     = 80
+}
