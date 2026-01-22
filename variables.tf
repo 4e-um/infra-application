@@ -170,13 +170,13 @@ variable "github_repos" {
 variable "api_cpu_limit" {
   description = "CPU limit for API services"
   type        = string
-  default     = "1"
+  default     = "2"
 }
 
 variable "api_memory_limit" {
   description = "Memory limit for API services"
   type        = string
-  default     = "512Mi"
+  default     = "1Gi"
 }
 
 variable "api_min_instances" {

@@ -25,6 +25,7 @@ resource "google_cloud_run_v2_service" "api_core" {
       max_instance_count = var.api_max_instances
     }
 
+    # 시작 시 CPU 부스트 (Cold Start 개선)
     containers {
       # Placeholder image - CI/CD will update this
       image = "gcr.io/cloudrun/hello"
