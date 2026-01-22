@@ -127,7 +127,7 @@ variable "batch_cpu_limit" {
 variable "batch_memory_limit" {
   description = "Memory limit for batch job"
   type        = string
-  default     = "2Gi"
+  default     = "8Gi"
 }
 
 variable "batch_timeout" {
