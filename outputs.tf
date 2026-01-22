@@ -45,6 +45,11 @@ output "cloudsql_public_ip" {
   value       = google_sql_database_instance.main.public_ip_address
 }
 
+output "cloudsql_private_ip" {
+  description = "CloudSQL private IP address (for VPC internal access)"
+  value       = google_sql_database_instance.main.private_ip_address
+}
+
 output "cloudsql_database_name" {
   description = "CloudSQL database name"
   value       = google_sql_database.main.name

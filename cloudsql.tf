@@ -21,7 +21,8 @@ resource "google_sql_database_instance" "main" {
     disk_autoresize   = false # Experimental: fixed size
 
     ip_configuration {
-      ipv4_enabled = true # Experimental: Public IP only
+      ipv4_enabled    = true # Keep public IP for external access
+      private_network = local.vpc_self_link
 
       # Experimental: allow all IPs (for debugging convenience)
       authorized_networks {
