@@ -48,7 +48,7 @@ variable "database_tier" {
 variable "database_disk_size" {
   description = "CloudSQL disk size in GB"
   type        = number
-  default     = 10
+  default     = 30
 }
 
 # =============================================================================
