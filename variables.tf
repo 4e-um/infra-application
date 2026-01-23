@@ -42,7 +42,7 @@ variable "database_password" {
 variable "database_tier" {
   description = "CloudSQL instance tier"
   type        = string
-  default     = "db-custom-1-3840"
+  default     = "db-custom-2-3840"
 }
 
 variable "database_disk_size" {
@@ -212,4 +212,20 @@ variable "api_concurrency" {
   description = "Max concurrent requests per instance"
   type        = number
   default     = 80
+}
+
+# =============================================================================
+# OpenTelemetry Configuration
+# =============================================================================
+
+variable "otel_exporter_endpoint" {
+  description = "OTLP exporter endpoint (Alloy external IP)"
+  type        = string
+  default     = ""
+}
+
+variable "otel_enabled" {
+  description = "Enable OpenTelemetry instrumentation"
+  type        = bool
+  default     = false
 }

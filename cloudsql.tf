@@ -42,6 +42,34 @@ resource "google_sql_database_instance" "main" {
       hour         = 4 # 04:00 UTC (13:00 KST)
       update_track = "stable"
     }
+
+    insights_config {
+      query_insights_enabled  = true
+      query_plans_per_minute  = 5
+      query_string_length     = 1024
+      record_application_tags = true
+      record_client_address   = true
+    }
+
+    database_flags {
+      name  = "log_checkpoints"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
   }
 }
 
