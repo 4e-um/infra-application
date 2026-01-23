@@ -138,7 +138,7 @@ variable "batch_memory_limit" {
 variable "batch_timeout" {
   description = "Timeout for batch job"
   type        = string
-  default     = "3600s"
+  default     = "7200s"
 }
 
 # =============================================================================
