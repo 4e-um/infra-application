@@ -197,7 +197,7 @@ resource "google_cloud_run_v2_service_iam_member" "api_core_public" {
 }
 
 # -----------------------------------------------------------------------------
-# api-usage: Kafka consume/produce 서비스 (내부 전용)
+# api-usage: Kafka consume/produce 서비스 (공개)
 # -----------------------------------------------------------------------------
 
 resource "google_cloud_run_v2_service" "api_usage" {
@@ -205,7 +205,7 @@ resource "google_cloud_run_v2_service" "api_usage" {
   project             = local.project_id
   location            = local.region
   deletion_protection = false
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  ingress             = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.app.email
@@ -374,6 +374,15 @@ resource "google_cloud_run_v2_service" "api_usage" {
     google_project_iam_member.app_secrets,
     google_project_iam_member.app_cloudsql,
   ]
+}
+
+# api-usage: 공개 접근 허용 (allUsers)
+resource "google_cloud_run_v2_service_iam_member" "api_usage_public" {
+  project  = local.project_id
+  location = local.region
+  name     = google_cloud_run_v2_service.api_usage.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 # -----------------------------------------------------------------------------
