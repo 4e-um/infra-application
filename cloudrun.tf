@@ -742,11 +742,11 @@ resource "google_cloud_run_v2_service" "api_mock" {
         }
       }
 
-      # Resource limits (lighter than other services)
+      # Resource limits
       resources {
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "2Gi"
         }
       }
 

@@ -78,3 +78,59 @@ resource "cloudflare_dns_record" "api" {
 
   comment = "API endpoint - Cloudflare Worker proxy to Cloud Run (managed by Terraform)"
 }
+
+# =============================================================================
+# Cloudflare Worker for api-mock (mock.domain.com)
+# =============================================================================
+
+resource "cloudflare_workers_script" "mock_proxy" {
+  account_id  = var.cloudflare_account_id
+  script_name = "${var.project_name}-mock-proxy"
+
+  content = <<-EOF
+    export default {
+      async fetch(request, env) {
+        const url = new URL(request.url);
+
+        url.hostname = env.CLOUD_RUN_HOST;
+        url.protocol = "https:";
+
+        const response = await fetch(url.toString(), {
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+          redirect: "follow"
+        });
+
+        return response;
+      }
+    }
+  EOF
+
+  main_module = "worker.js"
+
+  bindings = [
+    {
+      name = "CLOUD_RUN_HOST"
+      type = "plain_text"
+      text = trimprefix(trimprefix(google_cloud_run_v2_service.api_mock.uri, "https://"), "http://")
+    }
+  ]
+}
+
+resource "cloudflare_workers_route" "mock" {
+  zone_id = var.cloudflare_zone_id
+  pattern = "mock.${var.domain_name}/*"
+  script  = cloudflare_workers_script.mock_proxy.script_name
+}
+
+resource "cloudflare_dns_record" "mock" {
+  zone_id = var.cloudflare_zone_id
+  name    = "mock"
+  type    = "A"
+  content = "192.0.2.1"
+  ttl     = 1
+  proxied = true
+
+  comment = "Mock API endpoint - Cloudflare Worker proxy to Cloud Run (managed by Terraform)"
+}

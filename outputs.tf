@@ -101,6 +101,11 @@ output "api_domain" {
   value       = "api.${var.domain_name}"
 }
 
+output "mock_domain" {
+  description = "Mock API domain name"
+  value       = "mock.${var.domain_name}"
+}
+
 # =============================================================================
 # GitHub Actions Outputs (conditional - only when github_org is set)
 # =============================================================================
