@@ -538,6 +538,27 @@ resource "google_cloud_run_v2_service" "api_message" {
         }
       }
 
+      # Ureca secrets (same as api-core)
+      env {
+        name = "URECA_SECRET_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ureca_secret_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "URECA_HASH_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ureca_hash_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
       # OpenTelemetry Configuration
       dynamic "env" {
         for_each = var.otel_enabled ? [1] : []
