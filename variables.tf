@@ -42,7 +42,7 @@ variable "database_password" {
 variable "database_tier" {
   description = "CloudSQL instance tier"
   type        = string
-  default     = "db-custom-4-3840"
+  default     = "db-custom-6-3840"
 }
 
 variable "database_disk_size" {
