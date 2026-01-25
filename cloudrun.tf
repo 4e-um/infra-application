@@ -568,6 +568,17 @@ resource "google_cloud_run_v2_service" "api_message" {
         }
       }
 
+      # Mock server configuration
+      env {
+        name  = "MOCK_SERVER_ENABLED"
+        value = var.mock_server_enabled ? "true" : "false"
+      }
+
+      env {
+        name  = "MOCK_SERVER_URL"
+        value = "https://mock.${var.domain_name}"
+      }
+
       # OpenTelemetry Configuration
       dynamic "env" {
         for_each = var.otel_enabled ? [1] : []

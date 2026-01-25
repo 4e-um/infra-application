@@ -229,3 +229,13 @@ variable "otel_enabled" {
   type        = bool
   default     = false
 }
+
+# =============================================================================
+# Mock Server Configuration
+# =============================================================================
+
+variable "mock_server_enabled" {
+  description = "Enable mock server for api-message (uses mock.{domain_name})"
+  type        = bool
+  default     = false
+}
