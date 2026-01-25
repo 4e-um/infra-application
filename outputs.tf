@@ -17,6 +17,11 @@ output "cloudrun_api_message_url" {
   value       = google_cloud_run_v2_service.api_message.uri
 }
 
+output "cloudrun_api_mock_url" {
+  description = "Cloud Run api-mock service URL (public)"
+  value       = google_cloud_run_v2_service.api_mock.uri
+}
+
 # =============================================================================
 # Cloud Run Job Outputs
 # =============================================================================

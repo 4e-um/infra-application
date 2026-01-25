@@ -669,3 +669,137 @@ resource "google_cloud_run_v2_service_iam_member" "api_message_public" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+# -----------------------------------------------------------------------------
+# api-mock: Mock 서비스 (H2 인메모리 DB, 외부 접근 허용)
+# -----------------------------------------------------------------------------
+# 특징: CloudSQL/Redis/Kafka 연결 불필요, H2 인메모리 DB 사용
+
+resource "google_cloud_run_v2_service" "api_mock" {
+  name                = "${var.project_name}-api-mock"
+  project             = local.project_id
+  location            = local.region
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = google_service_account.app.email
+
+    scaling {
+      min_instance_count = var.api_min_instances
+      max_instance_count = 3
+    }
+
+    containers {
+      # Placeholder image - CI/CD will update this
+      image = "gcr.io/cloudrun/hello"
+
+      # Environment variables
+      env {
+        name  = "SPRING_PROFILES_ACTIVE"
+        value = "${var.environment},cloudrun"
+      }
+
+      # Mock server port (Cloud Run uses 8080)
+      env {
+        name  = "MOCK_SERVER_PORT"
+        value = "8080"
+      }
+
+      # H2 console settings for Cloud Run
+      env {
+        name  = "MOCK_H2_CONSOLE_ENABLED"
+        value = "true"
+      }
+
+      env {
+        name  = "MOCK_H2_ALLOW_OTHERS"
+        value = "true"
+      }
+
+      # OpenTelemetry Configuration
+      dynamic "env" {
+        for_each = var.otel_enabled ? [1] : []
+        content {
+          name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
+          value = var.otel_exporter_endpoint
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.otel_enabled ? [1] : []
+        content {
+          name  = "OTEL_SERVICE_NAME"
+          value = "api-mock"
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.otel_enabled ? [1] : []
+        content {
+          name  = "OTEL_ENVIRONMENT"
+          value = var.environment
+        }
+      }
+
+      # Resource limits (lighter than other services)
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "512Mi"
+        }
+      }
+
+      ports {
+        container_port = 8080
+      }
+
+      # Startup probe: Spring Boot 시작 대기 (최대 300초)
+      startup_probe {
+        http_get {
+          path = "/actuator/health"
+          port = 8080
+        }
+        initial_delay_seconds = 10
+        timeout_seconds       = 5
+        period_seconds        = 10
+        failure_threshold     = 30
+      }
+
+      # Liveness probe: 앱 정상 동작 확인
+      liveness_probe {
+        http_get {
+          path = "/actuator/health/liveness"
+          port = 8080
+        }
+        initial_delay_seconds = 0
+        timeout_seconds       = 5
+        period_seconds        = 30
+        failure_threshold     = 3
+      }
+    }
+
+    max_instance_request_concurrency = var.api_concurrency
+  }
+
+  labels = local.common_labels
+
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
+  }
+
+  depends_on = [
+    google_project_iam_member.app_secrets,
+  ]
+}
+
+# api-mock: 공개 접근 허용 (allUsers)
+resource "google_cloud_run_v2_service_iam_member" "api_mock_public" {
+  project  = local.project_id
+  location = local.region
+  name     = google_cloud_run_v2_service.api_mock.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
