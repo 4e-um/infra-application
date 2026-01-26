@@ -95,6 +95,31 @@ resource "google_cloud_run_v2_job" "batch_core" {
           }
         }
 
+        # OpenTelemetry Configuration
+        dynamic "env" {
+          for_each = var.otel_enabled ? [1] : []
+          content {
+            name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
+            value = var.otel_exporter_endpoint
+          }
+        }
+
+        dynamic "env" {
+          for_each = var.otel_enabled ? [1] : []
+          content {
+            name  = "OTEL_SERVICE_NAME"
+            value = "batch-core"
+          }
+        }
+
+        dynamic "env" {
+          for_each = var.otel_enabled ? [1] : []
+          content {
+            name  = "OTEL_ENVIRONMENT"
+            value = var.environment
+          }
+        }
+
         # CloudSQL Socket mount (Cloud Run이 자동으로 소켓 생성)
         volume_mounts {
           name       = "cloudsql"
