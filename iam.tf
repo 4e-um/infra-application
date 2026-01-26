@@ -63,3 +63,17 @@ resource "google_project_iam_member" "app_scheduler_admin" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
+# Cloud Tasks Enqueuer (for fn-batch-control and Scheduler to create tasks)
+resource "google_project_iam_member" "app_cloudtasks_enqueuer" {
+  project = local.project_id
+  role    = "roles/cloudtasks.enqueuer"
+  member  = "serviceAccount:${google_service_account.app.email}"
+}
+
+# Cloud Run Developer (for Cloud Tasks to execute jobs)
+resource "google_project_iam_member" "app_run_developer" {
+  project = local.project_id
+  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.app.email}"
+}
+

@@ -135,3 +135,17 @@ output "github_actions_config" {
     "    service_account: '${google_service_account.github_actions[0].email}'"
   ]) : null
 }
+
+# =============================================================================
+# Cloud Tasks Outputs
+# =============================================================================
+
+output "cloudtasks_batch_queue_name" {
+  description = "Cloud Tasks batch queue name"
+  value       = google_cloud_tasks_queue.batch_queue.name
+}
+
+output "cloudtasks_batch_queue_id" {
+  description = "Cloud Tasks batch queue full ID"
+  value       = google_cloud_tasks_queue.batch_queue.id
+}

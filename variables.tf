@@ -299,3 +299,31 @@ variable "fn_batch_control_timeout" {
   type        = number
   default     = 60
 }
+
+# =============================================================================
+# Cloud Tasks Configuration (batch-queue)
+# =============================================================================
+
+variable "batch_queue_max_attempts" {
+  description = "Maximum retry attempts for failed tasks"
+  type        = number
+  default     = 3
+}
+
+variable "batch_queue_min_backoff" {
+  description = "Minimum backoff time in seconds between retries"
+  type        = number
+  default     = 10
+}
+
+variable "batch_queue_max_backoff" {
+  description = "Maximum backoff time in seconds between retries"
+  type        = number
+  default     = 300
+}
+
+variable "batch_queue_max_retry_duration" {
+  description = "Maximum duration in seconds for retrying a task (0 = unlimited)"
+  type        = number
+  default     = 0
+}
