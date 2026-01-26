@@ -19,55 +19,55 @@ main:
   steps:
     - init:
         assign:
-          - project: $${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - project: '$${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'
           - location: "${local.region}"
           - jobName: "${var.project_name}-batch-core"
-          - args: $${input.args}
+          - args: '$${input.args}'
           - maxWaitTime: ${var.workflow_job_timeout}
           - pollInterval: ${var.workflow_poll_interval}
 
     - runJob:
         call: googleapis.run.v2.projects.locations.jobs.run
         args:
-          name: $${"projects/" + project + "/locations/" + location + "/jobs/" + jobName}
+          name: '$${"projects/" + project + "/locations/" + location + "/jobs/" + jobName}'
           body:
             overrides:
               containerOverrides:
-                - args: $${args}
+                - args: '$${args}'
         result: execution
 
     - extractExecutionName:
         assign:
-          - executionName: $${execution.metadata.name}
+          - executionName: '$${execution.metadata.name}'
 
     - waitForCompletion:
         call: sys.sleep
         args:
-          seconds: $${pollInterval}
+          seconds: '$${pollInterval}'
 
     - checkStatus:
         call: googleapis.run.v2.projects.locations.jobs.executions.get
         args:
-          name: $${executionName}
+          name: '$${executionName}'
         result: executionStatus
 
     - evaluateStatus:
         switch:
-          - condition: $${executionStatus.completionTime != null}
+          - condition: '$${executionStatus.completionTime != null}'
             next: checkResult
           - condition: true
             next: waitForCompletion
 
     - checkResult:
         switch:
-          - condition: $${executionStatus.succeededCount > 0}
+          - condition: '$${executionStatus.succeededCount > 0}'
             return:
               status: "SUCCEEDED"
-              executionName: $${executionName}
+              executionName: '$${executionName}'
           - condition: true
             raise:
               code: "JOB_FAILED"
-              message: $${"Job execution failed: " + executionName}
+              message: '$${"Job execution failed: " + executionName}'
 YAML
 
   depends_on = [
