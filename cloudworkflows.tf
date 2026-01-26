@@ -22,7 +22,7 @@ main:
           - project: '$${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}'
           - location: "${local.region}"
           - jobName: "${var.project_name}-batch-core"
-          - args: '$${input.args}'
+          - jobArgs: '$${input.args}'
           - maxWaitTime: ${var.workflow_job_timeout}
           - pollInterval: ${var.workflow_poll_interval}
 
@@ -33,7 +33,7 @@ main:
           body:
             overrides:
               containerOverrides:
-                - args: '$${args}'
+                - args: '$${jobArgs}'
         result: execution
 
     - extractExecutionName:
