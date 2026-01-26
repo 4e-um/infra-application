@@ -75,3 +75,10 @@ batch_timeout      = "3600s"
 
 github_org   = "your-github-org"
 github_repos = ["api-core", "api-usage", "api-message", "batch-core"]
+
+# -----------------------------------------------------------------------------
+# OpenTelemetry Configuration
+# -----------------------------------------------------------------------------
+
+otel_enabled           = true
+otel_exporter_endpoint = "http://public_ip:4318"  # Alloy public IP
