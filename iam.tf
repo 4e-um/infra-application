@@ -100,15 +100,7 @@ resource "google_service_account_iam_member" "app_self_act_as" {
 }
 
 # -----------------------------------------------------------------------------
-# Cloud Workflows Permissions
+# Cloud Run Job Execution Permissions
 # -----------------------------------------------------------------------------
-
-# App SA가 Workflows 실행 가능
-resource "google_project_iam_member" "app_workflows_invoker" {
-  project = local.project_id
-  role    = "roles/workflows.invoker"
-  member  = "serviceAccount:${google_service_account.app.email}"
-}
-
-# Workflows가 Cloud Run Job 실행 가능 (이미 run.developer 있음)
-# Workflows가 Job Execution 상태 조회 가능 (run.developer에 포함)
+# App SA가 Cloud Run Job 실행 및 상태 조회 가능 (run.developer에 포함)
+# fn-batch-control에서 직접 Job 실행 및 상태 확인

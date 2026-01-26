@@ -52,13 +52,14 @@ resource "google_cloud_run_v2_service" "fn_batch_control" {
       }
 
       env {
-        name  = "WORKFLOW_NAME"
-        value = google_workflows_workflow.batch_executor.name
-      }
-
-      env {
         name  = "PROJECT_NAME"
         value = var.project_name
+      }
+
+      # fn-batch-control 자기 자신의 URL (Cloud Tasks 타겟용)
+      env {
+        name  = "FN_BATCH_CONTROL_URL"
+        value = "https://${var.project_name}-fn-batch-control-${data.google_project.current.number}.${local.region}.run.app"
       }
 
       # Resource limits

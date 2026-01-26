@@ -3,7 +3,12 @@
 # =============================================================================
 # 목적: Cloud Run Job 실행을 직렬화하여 동시 실행 충돌 방지
 # 호출자: Scheduler, Cloud Function (fn-batch-control)
-# 타겟: Cloud Run Job (batch-core)
+# 타겟: fn-batch-control /internal/execute
+#
+# 플로우:
+# 1. Cloud Tasks → fn-batch-control/internal/execute
+# 2. Job 실행 중? → 503 반환 → Cloud Tasks 재시도 (30초 후)
+# 3. Job 미실행? → Job 직접 실행 → 200 반환 → Task 완료
 
 resource "google_cloud_tasks_queue" "batch_queue" {
   name     = "${var.project_name}-batch-queue"

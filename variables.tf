@@ -303,17 +303,19 @@ variable "fn_batch_control_timeout" {
 # =============================================================================
 # Cloud Tasks Configuration (batch-queue)
 # =============================================================================
+# Job 실행 중이면 503 반환 → Cloud Tasks 재시도
+# 장시간 Job 대비 충분한 재시도 설정
 
 variable "batch_queue_max_attempts" {
-  description = "Maximum retry attempts for failed tasks"
+  description = "Maximum retry attempts for failed tasks (503 retries for running jobs)"
   type        = number
-  default     = 3
+  default     = 100
 }
 
 variable "batch_queue_min_backoff" {
   description = "Minimum backoff time in seconds between retries"
   type        = number
-  default     = 10
+  default     = 30
 }
 
 variable "batch_queue_max_backoff" {
@@ -323,23 +325,8 @@ variable "batch_queue_max_backoff" {
 }
 
 variable "batch_queue_max_retry_duration" {
-  description = "Maximum duration in seconds for retrying a task (0 = unlimited)"
+  description = "Maximum duration in seconds for retrying a task (2 hours for long jobs)"
   type        = number
-  default     = 0
+  default     = 7200
 }
 
-# =============================================================================
-# Cloud Workflows Configuration
-# =============================================================================
-
-variable "workflow_job_timeout" {
-  description = "Maximum time to wait for job completion (seconds)"
-  type        = number
-  default     = 7200 # 2 hours (matches batch_timeout)
-}
-
-variable "workflow_poll_interval" {
-  description = "Interval between job status checks (seconds)"
-  type        = number
-  default     = 30
-}
