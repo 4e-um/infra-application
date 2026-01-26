@@ -88,3 +88,14 @@ resource "google_service_account_iam_member" "cloudtasks_token_creator" {
   member             = "serviceAccount:service-${local.project_number}@gcp-sa-cloudtasks.iam.gserviceaccount.com"
 }
 
+# -----------------------------------------------------------------------------
+# App SA Self-Impersonation for Cloud Tasks
+# -----------------------------------------------------------------------------
+# When creating Cloud Tasks with OIDC token targeting app SA,
+# the caller (app SA) needs "actAs" permission on itself
+resource "google_service_account_iam_member" "app_self_act_as" {
+  service_account_id = google_service_account.app.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.app.email}"
+}
+
