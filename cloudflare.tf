@@ -72,9 +72,9 @@ resource "cloudflare_dns_record" "api" {
   zone_id = var.cloudflare_zone_id
   name    = "api"
   type    = "A"
-  content = "192.0.2.1"  # Dummy IP - Worker가 실제 라우팅 처리
-  ttl     = 1            # Auto TTL (proxied 모드)
-  proxied = true         # Cloudflare Proxy ON - Worker로 라우팅
+  content = "192.0.2.1" # Dummy IP - Worker가 실제 라우팅 처리
+  ttl     = 1           # Auto TTL (proxied 모드)
+  proxied = true        # Cloudflare Proxy ON - Worker로 라우팅
 
   comment = "API endpoint - Cloudflare Worker proxy to Cloud Run (managed by Terraform)"
 }

@@ -77,3 +77,14 @@ resource "google_project_iam_member" "app_run_developer" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
+# -----------------------------------------------------------------------------
+# Cloud Tasks Service Agent Permissions
+# -----------------------------------------------------------------------------
+# Cloud Tasks service agent needs to generate OIDC tokens for app SA
+# to invoke Cloud Run Job on behalf of the queue
+resource "google_service_account_iam_member" "cloudtasks_token_creator" {
+  service_account_id = google_service_account.app.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:service-${local.project_number}@gcp-sa-cloudtasks.iam.gserviceaccount.com"
+}
+
