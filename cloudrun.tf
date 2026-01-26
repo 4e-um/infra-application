@@ -119,6 +119,29 @@ resource "google_cloud_run_v2_service" "api_core" {
         }
       }
 
+      # Billing Grafana Configuration (api-core specific)
+      dynamic "env" {
+        for_each = var.billing_grafana_iframe_url != "" ? [1] : []
+        content {
+          name  = "BILLING_GRAFANA_IFRAME_URL"
+          value = var.billing_grafana_iframe_url
+        }
+      }
+
+      env {
+        name  = "BILLING_GRAFANA_REFRESH_INTERVAL"
+        value = var.billing_grafana_refresh_interval
+      }
+
+      # Cloud Function Configuration (api-core specific)
+      dynamic "env" {
+        for_each = var.cloud_function_base_url != "" ? [1] : []
+        content {
+          name  = "CLOUD_FUNCTION_BASE_URL"
+          value = var.cloud_function_base_url
+        }
+      }
+
       # OpenTelemetry Configuration
       dynamic "env" {
         for_each = var.otel_enabled ? [1] : []

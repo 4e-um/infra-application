@@ -239,3 +239,29 @@ variable "mock_server_enabled" {
   type        = bool
   default     = false
 }
+
+# =============================================================================
+# Billing Dashboard Configuration (api-core)
+# =============================================================================
+
+variable "billing_grafana_iframe_url" {
+  description = "Grafana iframe URL for billing dashboard"
+  type        = string
+  default     = ""
+}
+
+variable "billing_grafana_refresh_interval" {
+  description = "Grafana dashboard refresh interval"
+  type        = string
+  default     = "5s"
+}
+
+# =============================================================================
+# Cloud Function Configuration (api-core)
+# =============================================================================
+
+variable "cloud_function_base_url" {
+  description = "Cloud Function base URL for batch control"
+  type        = string
+  default     = ""
+}

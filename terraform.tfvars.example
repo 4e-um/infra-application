@@ -82,3 +82,16 @@ github_repos = ["api-core", "api-usage", "api-message", "batch-core"]
 
 otel_enabled           = true
 otel_exporter_endpoint = "http://public_ip:4318"  # Alloy public IP
+
+# -----------------------------------------------------------------------------
+# Billing Dashboard Configuration (api-core)
+# -----------------------------------------------------------------------------
+
+billing_grafana_iframe_url       = "http://34.22.76.102/d-solo/xxx/dashboard"
+billing_grafana_refresh_interval = "5s"
+
+# -----------------------------------------------------------------------------
+# Cloud Function Configuration (api-core)
+# -----------------------------------------------------------------------------
+
+cloud_function_base_url = "https://asia-northeast3-your-project.cloudfunctions.net/fn-batch-control"
