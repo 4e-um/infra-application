@@ -22,6 +22,11 @@ output "cloudrun_api_mock_url" {
   value       = google_cloud_run_v2_service.api_mock.uri
 }
 
+output "cloudrun_fn_batch_control_url" {
+  description = "Cloud Run fn-batch-control service URL (public)"
+  value       = google_cloud_run_v2_service.fn_batch_control.uri
+}
+
 # =============================================================================
 # Cloud Run Job Outputs
 # =============================================================================

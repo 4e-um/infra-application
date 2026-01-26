@@ -265,3 +265,37 @@ variable "cloud_function_base_url" {
   type        = string
   default     = ""
 }
+
+# =============================================================================
+# Cloud Function Configuration (fn-batch-control)
+# =============================================================================
+
+variable "fn_batch_control_cpu_limit" {
+  description = "CPU limit for fn-batch-control"
+  type        = string
+  default     = "1"
+}
+
+variable "fn_batch_control_memory_limit" {
+  description = "Memory limit for fn-batch-control"
+  type        = string
+  default     = "512Mi"
+}
+
+variable "fn_batch_control_max_instances" {
+  description = "Maximum instances for fn-batch-control"
+  type        = number
+  default     = 100
+}
+
+variable "fn_batch_control_concurrency" {
+  description = "Max concurrent requests per instance"
+  type        = number
+  default     = 1
+}
+
+variable "fn_batch_control_timeout" {
+  description = "Request timeout in seconds"
+  type        = number
+  default     = 60
+}

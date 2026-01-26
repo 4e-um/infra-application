@@ -56,3 +56,10 @@ resource "google_project_iam_member" "app_trace" {
   member  = "serviceAccount:${google_service_account.app.email}"
 }
 
+# Cloud Scheduler Admin (for fn-batch-control to manage schedules)
+resource "google_project_iam_member" "app_scheduler_admin" {
+  project = local.project_id
+  role    = "roles/cloudscheduler.admin"
+  member  = "serviceAccount:${google_service_account.app.email}"
+}
+
