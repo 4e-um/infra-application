@@ -149,3 +149,17 @@ output "cloudtasks_batch_queue_id" {
   description = "Cloud Tasks batch queue full ID"
   value       = google_cloud_tasks_queue.batch_queue.id
 }
+
+# =============================================================================
+# Cloud Workflows Outputs
+# =============================================================================
+
+output "batch_executor_workflow_name" {
+  description = "Batch executor workflow name"
+  value       = google_workflows_workflow.batch_executor.name
+}
+
+output "batch_executor_workflow_url" {
+  description = "Batch executor workflow execution URL"
+  value       = "https://workflowexecutions.googleapis.com/v1/${google_workflows_workflow.batch_executor.id}/executions"
+}

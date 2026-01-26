@@ -51,6 +51,16 @@ resource "google_cloud_run_v2_service" "fn_batch_control" {
         value = data.google_project.current.number
       }
 
+      env {
+        name  = "WORKFLOW_NAME"
+        value = google_workflows_workflow.batch_executor.name
+      }
+
+      env {
+        name  = "PROJECT_NAME"
+        value = var.project_name
+      }
+
       # Resource limits
       resources {
         limits = {

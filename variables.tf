@@ -327,3 +327,19 @@ variable "batch_queue_max_retry_duration" {
   type        = number
   default     = 0
 }
+
+# =============================================================================
+# Cloud Workflows Configuration
+# =============================================================================
+
+variable "workflow_job_timeout" {
+  description = "Maximum time to wait for job completion (seconds)"
+  type        = number
+  default     = 7200 # 2 hours (matches batch_timeout)
+}
+
+variable "workflow_poll_interval" {
+  description = "Interval between job status checks (seconds)"
+  type        = number
+  default     = 30
+}
