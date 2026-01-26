@@ -177,7 +177,7 @@ variable "github_org" {
 variable "github_repos" {
   description = "List of GitHub repository names allowed to authenticate"
   type        = list(string)
-  default     = ["api-core", "api-usage", "api-message", "api-mock", "batch-core"]
+  default     = ["api-core", "api-usage", "api-message", "api-mock", "batch-core", "fn-batch-control"]
 }
 
 # =============================================================================
